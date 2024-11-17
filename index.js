@@ -1,37 +1,30 @@
-var http = require('http');
-var url = require('url');
-var fs = require('fs');
+const express = require('express');
+const path = require('path');
+const app = express();
+const PORT = 8080;
 
-http.createServer(function (req, res) {
-    var requestedUrl = url.parse(req.url, true);
+// Middleware to serve static files (like HTML)
+app.use(express.static(path.join(__dirname, 'src')));
 
-    // if a valid request return the page.html, else return 404.html
-    if (requestedUrl.pathname === "/" || requestedUrl.pathname === "" || requestedUrl.pathname === "/about" || requestedUrl.pathname === "/contact-me") {
-        var filename = "";
-        if (requestedUrl.pathname === "/" || requestedUrl.pathname === "") {
-            filename = "./src/index.html";
-        } else {
-            filename = "./src" + requestedUrl.pathname + ".html";
-        }
-        fs.readFile(filename, function(err, data) {
-            if (err) {
-              res.writeHead(404, {'Content-Type': 'text/html'});
-              return res.end("404 Not Found");
-            } 
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            res.write(data);
-            return res.end();
-          });
-    } else {
-        var filename = "./src/404.html";
-        fs.readFile(filename, function(err, data) {
-            if (err) {
-              res.writeHead(404, {'Content-Type': 'text/html'});
-              return res.end("404 Not Found");
-            } 
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            res.write(data);
-            return res.end();
-          });
-    }
-}).listen(8080);
+// Route definitions
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'src', 'index.html'));
+});
+
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, 'src', 'about.html'));
+});
+
+app.get('/contact-me', (req, res) => {
+    res.sendFile(path.join(__dirname, 'src', 'contact-me.html'));
+});
+
+// Catch-all route for 404 errors
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'src', '404.html'));
+});
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
